@@ -1,0 +1,10 @@
+modularity!
+
+I want to simulate evolution by natural selection
+    - change the model from generation to generation
+
+What about in generation learning?
+    - storage neurons?
+    - recursive neurons?
+    - social behaviour?
+        - signaling mechansim (color set)

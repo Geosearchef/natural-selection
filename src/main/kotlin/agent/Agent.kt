@@ -1,0 +1,4 @@
+package agent
+
+class Agent {
+}
