@@ -8,3 +8,4 @@ What about in generation learning?
     - recursive neurons?
     - social behaviour?
         - signaling mechansim (color set)
+        - similarity (family) indicator
