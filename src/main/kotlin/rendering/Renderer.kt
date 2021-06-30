@@ -6,9 +6,11 @@ import environment.FoodUnit
 import util.math.Vector
 import java.awt.Color
 import java.awt.Graphics
+import java.awt.Graphics2D
+import java.awt.RenderingHints
 import javax.swing.JFrame
 import javax.swing.JPanel
-import kotlin.math.roundToInt
+
 
 const val FRAME_TITLE = "natural-selection"
 val FOOD_COLOR = Color(250, 175, 0)
@@ -26,10 +28,11 @@ class Renderer : JPanel() {
 
     var environment: Environment? = null
 
-    override fun paintComponent(g: Graphics?) {
-        if(g == null) {
-            return
-        }
+    override fun paintComponent(graphics: Graphics?) {
+        val g = graphics?.create() as? Graphics2D ?: return
+        g.setRenderingHints(RenderingHints(
+            RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON
+        ))
 
         g.clearRect(0, 0, width, height)
 
@@ -43,19 +46,21 @@ class Renderer : JPanel() {
         }
     }
 
-    fun renderFoodUnit(g: Graphics, f: FoodUnit) {
-        val radius = f.amount * 4
+    fun renderFoodUnit(g: Graphics2D, f: FoodUnit) {
+        val radius = Math.sqrt(f.amount) * 3.0
         g.color = FOOD_COLOR
-        g.fillOval(
-            (f.pos.x - radius / 2.0).roundToInt(),
-            ((f.pos.y - radius / 2.0).roundToInt()),
-            (radius * 2.0).roundToInt(),
-            (radius * 2.0).roundToInt()
-        )
+        g.fillCircle(f.pos, radius)
     }
 
-    fun renderBeing(g: Graphics, b: Being) {
+    fun renderBeing(g: Graphics2D, b: Being) {
+        val radius = b.health
+        g.color = Color(0, 133, 115)
+        g.fillCircle(b.pos, radius)
 
+        // eye
+        val eyePos = b.pos + b.direction.normalise() * radius.toDouble() * 0.7
+        g.color = Color(191, 191, 191)
+        g.fillCircle(eyePos, radius / 3)
     }
 
 }
