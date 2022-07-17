@@ -1,7 +1,6 @@
 package agent.network
 
 import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.math.max
 import kotlin.math.min
 
@@ -14,12 +13,12 @@ class NetworkEvolver(val neuronLimit: Int = 300, val allowNegativeWeights: Boole
             evolveSynapseWeights(net, count = net.synapses.size / 3)
         }
 
-        if(random.nextDouble() < 0.40 && net.neurons.size > neuronLimit / 4) {
-            removeNeurons(net, net.neurons.size / 10)
+        if(random.nextDouble() < 0.40 && net.hidden.size > neuronLimit / 4) {
+            removeNeurons(net, net.hidden.size / 10)
         }
 
-        if(random.nextDouble() < 0.70 && net.neurons.size < neuronLimit) {
-            addNeurons(net, max(neuronLimit / 100, net.neurons.size / 10))
+        if(random.nextDouble() < 0.70 && net.hidden.size < neuronLimit) {
+            addNeurons(net, max(neuronLimit / 100, net.hidden.size / 10))
         }
 
         if(random.nextDouble() < 0.40 && net.synapses.size > synapseLimit / 4) {
@@ -27,7 +26,7 @@ class NetworkEvolver(val neuronLimit: Int = 300, val allowNegativeWeights: Boole
         }
 
         if(random.nextDouble() < 0.70 && net.synapses.size < synapseLimit) {
-            addSynapses(net, min(net.neurons.size / 4, synapseLimit / 10))
+            addSynapses(net, min(net.hidden.size / 4, synapseLimit / 10))
         }
 
         // todo: neuron types
@@ -48,12 +47,12 @@ class NetworkEvolver(val neuronLimit: Int = 300, val allowNegativeWeights: Boole
         }
     }
 
-    // tend towards unused neurons
+    // tends towards unused neurons
     fun addSynapses(net: Network, count: Int, weightMean: Double = 0.3, weightDeviation: Double = 0.5, fixedSource: Neuron? = null, fixedTarget: Neuron? = null) {
-        val sourceSpace = net.neurons.filter { it !in net.outputs }
-        val targetSpace = net.neurons.filter { it !in net.inputs }
+        val sourceSpace = net.hidden.filter { it !in net.outputs }
+        val targetSpace = net.hidden.filter { it !in net.inputs }
 
-        for(i in 0 until count) {
+        repeat(count) {
             val source = fixedSource ?: sourceSpace.randomOrNull()
             val target = fixedTarget ?: targetSpace.filter { it != source }.randomOrNull()
 
@@ -65,22 +64,21 @@ class NetworkEvolver(val neuronLimit: Int = 300, val allowNegativeWeights: Boole
                     }
                 }
             }
-
         }
     }
 
     // TODO: tend towards unused ones
     fun removeSynapses(net: Network, count: Int) {
-        for(i in 0 until count) {
+        repeat(count) {
             val synapse = net.synapses.randomOrNull()
             synapse?.let { net.synapses.remove(it) }
         }
     }
 
     fun addNeurons(net: Network, count: Int) {
-        for(i in 0 until count) {
+        repeat(count) {
             val neuron = Neuron(net.defaultActivationFunction)
-            net.neurons.add(neuron)
+            net.hidden.add(neuron)
 
             addSynapses(net, 1, fixedTarget = neuron)
             addSynapses(net, 1, fixedSource = neuron)
@@ -88,11 +86,11 @@ class NetworkEvolver(val neuronLimit: Int = 300, val allowNegativeWeights: Boole
     }
 
     fun removeNeurons(net: Network, count: Int) {
-        for(i in 0 until count) {
-            val removedNeuron = net.neurons.filter { it !in net.inputs && it !in net.outputs }.random()
+        repeat(count) {
+            val removedNeuron = net.hidden.filter { it !in net.inputs && it !in net.outputs }.random()
             val removedSynapses = net.synapses.filter { it.source == removedNeuron || it.target == removedNeuron }
 
-            net.neurons.remove(removedNeuron)
+            net.hidden.remove(removedNeuron)
             net.synapses.removeAll(removedSynapses)
         }
     }

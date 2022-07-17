@@ -1,5 +1,7 @@
 package agent.network
 
+import kotlin.math.exp
+
 abstract class ActivationFunction {
     abstract fun getActivation(stimulus: Double): Double
 }
@@ -19,3 +21,8 @@ class ReLUActivation(val threshold: Double = 0.0, val scale: Double = 1.0) : Act
 class LeakyReLUActivation(val threshold: Double = 0.0, val scale: Double = 1.0, val leakyScale: Double = 0.1) : ActivationFunction() {
     override fun getActivation(stimulus: Double) = (stimulus - threshold) * (if(stimulus > threshold) scale else leakyScale)
 }
+
+class SigmoidActivation() : ActivationFunction() {
+    override fun getActivation(stimulus: Double) = 1.0 / (1.0 + exp(-stimulus))
+}
+

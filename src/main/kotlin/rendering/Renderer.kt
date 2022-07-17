@@ -1,5 +1,6 @@
 package rendering
 
+import SimulationController
 import environment.Being
 import environment.Environment
 import environment.FoodUnit
@@ -8,18 +9,24 @@ import java.awt.Color
 import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.RenderingHints
+import java.awt.event.KeyEvent
+import java.awt.event.KeyListener
 import javax.swing.JFrame
 import javax.swing.JPanel
+import kotlin.math.roundToInt
 
 
 const val FRAME_TITLE = "natural-selection"
 val FOOD_COLOR = Color(250, 175, 0)
 
-class Renderer : JPanel() {
+class Renderer : JPanel(), KeyListener {
 
     var frame = JFrame(FRAME_TITLE).apply { // wtf kotlin
         defaultCloseOperation = JFrame.EXIT_ON_CLOSE
         add(this@Renderer)
+
+        addKeyListener(this@Renderer)
+
         setSize(1600, 900)
         isVisible = true
     }
@@ -44,6 +51,8 @@ class Renderer : JPanel() {
                 is Being -> renderBeing(g, entity)
             }
         }
+
+        renderUI(g)
     }
 
     fun renderFoodUnit(g: Graphics2D, f: FoodUnit) {
@@ -63,4 +72,40 @@ class Renderer : JPanel() {
         g.fillCircle(eyePos, radius / 3)
     }
 
+    fun renderUI(g: Graphics2D) {
+        val env = environment ?: return
+
+        val oldFont = g.font
+
+        g.font = g.font.deriveFont(17.0f)
+
+        g.color = Color.BLACK
+        g.drawString("generation: %d".format(env.generation), 8, 20)
+        g.drawString("alive: %d".format(env.beings.size), 8, 40)
+        g.drawString("time: %.2f s".format(env.simulationTime), 8, 80)
+        g.drawString("delta: %d ms".format((env.averageDelta * 1000.0).roundToInt()), 8, 100)
+
+
+        g.drawString("avg. neurons: %.1f".format(env.stats.avgNeuronsPerAgent), 8, 160)
+        g.drawString("avg. synapses: %.1f".format(env.stats.avgSynapsesPerAgent), 8, 180)
+
+
+
+        g.font = oldFont
+    }
+
+    override fun keyTyped(e: KeyEvent?) {}
+
+    override fun keyPressed(e: KeyEvent?) {
+        if(e == null) {
+            return
+        }
+
+        if(e.keyCode == 'W'.code) {
+            SimulationController.toggleWarp()
+        }
+
+    }
+
+    override fun keyReleased(e: KeyEvent?) {}
 }

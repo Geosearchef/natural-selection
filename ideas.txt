@@ -9,3 +9,8 @@ What about in generation learning?
     - social behaviour?
         - signaling mechansim (color set)
         - similarity (family) indicator
+
+
+
+## Activation
+Activation should be in the range [-1, 1] for inputs / outputs as that is what inner neurons will use due to sigmoid activation function
