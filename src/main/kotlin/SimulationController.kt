@@ -5,6 +5,7 @@ import environment.Environment
 import rendering.Renderer
 import java.util.concurrent.CompletableFuture
 import javax.swing.SwingUtilities
+import kotlin.math.roundToLong
 
 object SimulationController {
     const val WARP_SPEED = 0.04 // update step size
@@ -65,10 +66,10 @@ object SimulationController {
                     }
                     renderFuture.join()
 
-                    Thread.sleep(16)
+                    if(!warp && delta < 0.016) {
+                        Thread.sleep(16 - (delta * 1000).roundToLong())
+                    }
                 }
-
-                println(env.simulationTime)
 
                 if(env.simulationTime > SIMULATION_ROUND_TIME_LIMIT || env.beings.size.toDouble() < 0.5 * INITIAL_AGENTS.toDouble()) {
                     break

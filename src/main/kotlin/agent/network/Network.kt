@@ -14,13 +14,16 @@ class Network(val defaultActivationFunction: ActivationFunction = SigmoidActivat
         val inputsByNeuron: MutableMap<Neuron, MutableList<Synapse>> = nonInputNeurons.associateWith { ArrayList<Synapse>() }.toMutableMap()
         synapses.forEach { inputsByNeuron[it.target]?.add(it) }
 
-        val activationsByNeuron = nonInputNeurons.associateWith { it.activation }
+        val activationsByNeuron = neurons.associateWith { it.activation }
 
         nonInputNeurons.forEach { neuron ->
             val stimulus = inputsByNeuron[neuron]?.sumByDouble { (activationsByNeuron[it.source] ?: 0.0) * it.weight } ?: 0.0
             neuron.setActivationBasedOnStimulus(stimulus)
         }
     }
+
+    fun getSynapsesTo(target: Neuron) = synapses.filter { it.target == target }
+    fun getSynapsesFrom(source: Neuron) = synapses.filter { it.source == source }
 
     fun clone(): Network {
         val net = Network(this.defaultActivationFunction)

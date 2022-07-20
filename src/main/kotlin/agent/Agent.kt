@@ -40,13 +40,31 @@ class Agent(val net: Network) {
 
             net.inputs[INPUT_DIST_NEAREST_BEING].activation = (max(0.0, 1000.0 - closestBeingDist) / 1000.0) // TODO: scale ok?
             net.inputs[INPUT_ANGLE_NEAREST_BEING].activation = closestBeingAngle / PI // TODO: scale ok?
+
+            val closestFood = env.foodUnits.minByOrNull { (it.pos - ownBeing!!.pos).lengthSquared() }
+            var closestFoodDist = 2000.0
+            var closestFoodAngle = 0.0
+            if(closestFood != null) {
+                closestFoodDist = (ownBeing!!.pos - closestFood.pos).length()
+                closestFoodAngle = getRelativeAngleToEntity(closestFood)
+            }
+
+            net.inputs[INPUT_DIST_NEAREST_FOOD].activation = (max(0.0, 1000.0 - closestFoodDist) / 1000.0) // TODO: scale ok?
+            net.inputs[INPUT_ANGLE_NEAREST_FOOD].activation = closestFoodAngle / PI // TODO: scale ok?
         }
     }
 
     private fun getRelativeAngleToEntity(entity: Entity): Double {
         val toOther = (entity.pos - ownBeing!!.pos).normalise()
         val ownDirection = ownBeing!!.direction.normalise()
-        val relativeAngle = atan2(toOther.y, toOther.x) - atan2(ownDirection.y, ownDirection.x)
+        var relativeAngle = atan2(toOther.y, toOther.x) - atan2(ownDirection.y, ownDirection.x)
+
+        if(relativeAngle > PI) {
+            relativeAngle -= 2.0 * PI
+        } else if(relativeAngle < -PI) {
+            relativeAngle += 2.0 * PI
+        }
+
         return relativeAngle
     }
 
@@ -55,7 +73,13 @@ class Agent(val net: Network) {
         net.update()
 
 //        ownBeing!!.orientation -= 2.0 * delta * net.inputs[INPUT_ANGLE_NEAREST_BEING].activation
-        ownBeing!!.orientation -= 2.0 * delta * (net.outputs[OUTPUT_STEERING].activation - 0.5) // TODO: what about other activation functions? should they even be allowed for output?
+        ownBeing!!.orientation -= 5.0 * delta * (net.outputs[OUTPUT_STEERING].activation - 0.5) // TODO: what about other activation functions? should they even be allowed for output?
+
+//        ownBeing!!.orientation -= 5.0 * delta * (net.inputs[INPUT_ANGLE_NEAREST_FOOD].activation)
+
+        if(env!!.beings[0] == this.ownBeing) {
+            println("${net.inputs[INPUT_ANGLE_NEAREST_FOOD].activation} -> ${net.outputs[OUTPUT_STEERING].activation}")
+        }
     }
 
     fun getOutputs() {

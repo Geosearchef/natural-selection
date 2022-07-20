@@ -49,8 +49,8 @@ class NetworkEvolver(val neuronLimit: Int = 300, val allowNegativeWeights: Boole
 
     // tends towards unused neurons
     fun addSynapses(net: Network, count: Int, weightMean: Double = 0.3, weightDeviation: Double = 0.5, fixedSource: Neuron? = null, fixedTarget: Neuron? = null) {
-        val sourceSpace = net.hidden.filter { it !in net.outputs }
-        val targetSpace = net.hidden.filter { it !in net.inputs }
+        val sourceSpace = net.nonOutputNeurons
+        val targetSpace = net.nonInputNeurons
 
         repeat(count) {
             val source = fixedSource ?: sourceSpace.randomOrNull()
