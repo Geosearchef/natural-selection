@@ -63,7 +63,7 @@ class Renderer : JPanel(), KeyListener {
 
     fun renderBeing(g: Graphics2D, b: Being) {
         val radius = b.health
-        g.color = Color(0, 133, 115)
+        g.color = b.agent?.color ?: Color(0, 133, 115)
         g.fillCircle(b.pos, radius)
 
         // eye

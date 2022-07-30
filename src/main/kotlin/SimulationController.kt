@@ -3,12 +3,16 @@ import agent.network.Network
 import agent.network.NetworkEvolver
 import environment.Environment
 import rendering.Renderer
+import util.ColorUtil
 import java.util.concurrent.CompletableFuture
 import javax.swing.SwingUtilities
+import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 
 object SimulationController {
-    const val WARP_SPEED = 0.04 // update step size
+    const val BEING_MAX_SPEED = 30.0
+    const val BEING_TURN_FACTOR = 12.0
+    const val WARP_SPEED = 0.20 // update step size
     const val SIMULATION_ROUND_TIME_LIMIT = 30.0
     const val INITIAL_AGENTS = 50
 
@@ -81,9 +85,21 @@ object SimulationController {
 
             println("Agents left: ${agents.size}, reproducing...")
 
+            val averageBeingHealth = env.beings.map { it.health }.average()
+            val agentsToReproduce = ArrayList(agents.filter { it.ownBeing!!.health > 0.5 * averageBeingHealth })
+            agentsToReproduce.addAll(agentsToReproduce.filter { it.ownBeing!!.health > 1.25 * averageBeingHealth })
+
+            repeat((agentsToReproduce.size.toDouble() * 0.1).roundToInt()) {
+                val net = Network() // TODO: duplicate code
+                networkEvolver.evolve(net)
+                Agent.initNetworkBoundaries(net)
+                agentsToReproduce.add(Agent(net))
+            }
+
             // Select, reproduce and evolve
             while(agents.size < INITIAL_AGENTS) {
-                val newAgent = Agent(agents.random().net.clone()) // TODO: THIS INCLUDES THE NEWLY CREATED AGENTS
+                val randomAgent = agentsToReproduce.random()
+                val newAgent = Agent(randomAgent.net.clone(), ColorUtil.randomShiftColor(randomAgent.color))
                 networkEvolver.evolve(newAgent.net)
 
                 agents.add(newAgent)

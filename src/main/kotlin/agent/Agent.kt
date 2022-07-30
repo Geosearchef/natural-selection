@@ -1,10 +1,13 @@
 package agent
 
+import SimulationController
 import agent.network.Network
 import agent.network.Neuron
 import environment.Being
 import environment.Entity
 import environment.Environment
+import util.ColorUtil
+import java.awt.Color
 import kotlin.math.PI
 import kotlin.math.atan2
 import kotlin.math.max
@@ -19,7 +22,7 @@ const val INPUT_HEALTH_NEAREST_BEING = 5
 const val OUTPUT_SPEED = 0
 const val OUTPUT_STEERING = 1
 
-class Agent(val net: Network) {
+class Agent(val net: Network, val color: Color = ColorUtil.randomColor()) {
     var env: Environment? = null
     var ownBeing: Being? = null
 
@@ -72,14 +75,17 @@ class Agent(val net: Network) {
         updateInputs()
         net.update()
 
-//        ownBeing!!.orientation -= 2.0 * delta * net.inputs[INPUT_ANGLE_NEAREST_BEING].activation
-        ownBeing!!.orientation -= 5.0 * delta * (net.outputs[OUTPUT_STEERING].activation - 0.5) // TODO: what about other activation functions? should they even be allowed for output?
-
 //        ownBeing!!.orientation -= 5.0 * delta * (net.inputs[INPUT_ANGLE_NEAREST_FOOD].activation)
+        ownBeing!!.orientation -= SimulationController.BEING_TURN_FACTOR * delta * (net.outputs[OUTPUT_STEERING].activation - 0.5) // TODO: what about other activation functions? should they even be allowed for output?
 
-        if(env!!.beings[0] == this.ownBeing) {
-            println("${net.inputs[INPUT_ANGLE_NEAREST_FOOD].activation} -> ${net.outputs[OUTPUT_STEERING].activation}")
+        if(env!!.generation > 50) {
+            ownBeing!!.speed = SimulationController.BEING_MAX_SPEED * (0.75 + (net.outputs[OUTPUT_SPEED].activation * 1.0))
         }
+
+
+//        if(env!!.beings[0] == this.ownBeing) {
+//            println("${net.inputs[INPUT_ANGLE_NEAREST_FOOD].activation} -> ${net.outputs[OUTPUT_SPEED].activation}")
+//        }
     }
 
     fun getOutputs() {
